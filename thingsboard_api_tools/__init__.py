@@ -78,18 +78,31 @@ class TbApi:
         return None
 
 
-    def get_tenant_assets(self):
+    def get_tenant_asset(self, name=None, type=None, pageSize=10000, page=0):
         """
-        Returns a list of all assets for current tenant
+        Returns an asset if name is specified,
+        otherwise returns a list of all assets for current tenant
         """
-        return self.get("/api/tenant/assets?limit=99999", "Error retrieving assets for tenant")["data"]
+        if name is not None:
+            resp = self.get(f"/api/tenant/assets?pageSize={pageSize}&page={page}&textSearch={name}", "Error retrieving deivece profiles")["data"]
+            assert len(resp) == 1, "0 or more than 1 asset found with this name"
+            return resp[0]
+        else:
+            return self.get(f"/api/tenant/assets?pageSize={pageSize}&page={page}", "Error retrieving deivece profiles")["data"]
+       
+        
+    def get_tenant_device(self, name=None, type=None, pageSize=10000, page=0):
+        """
+        Returns a device if name is specified,
+        otherwise returns a list of all devices for current tenant
+        """
+        if name is not None:
+            resp = self.get(f"/api/tenant/devices?pageSize={pageSize}&page={page}&textSearch={name}", "Error retrieving devices for tenant")["data"]
+            assert len(resp) == 1, "0 or more than 1 device found with this name"
+            return resp[0]
+        else:
+            return self.get(f"/api/tenant/devices?pageSize={pageSize}&page={page}", "Error retrieving devices for tenant")["data"]
 
-
-    def get_tenant_devices(self):
-        """
-        Returns a list of all devices for current tenant
-        """
-        return self.get("/api/tenant/devices?limit=99999", "Error retrieving devices for tenant")["data"]
 
 
     def get_customer_devices(self, cust):
@@ -358,7 +371,7 @@ class TbApi:
         return asset
 
 
-    def add_device(self, device_name, device_type, shared_attributes, server_attributes):
+    def add_device(self, device_name, device_type, shared_attributes=None, server_attributes=None):
         """
         Returns device object
         """
@@ -378,7 +391,7 @@ class TbApi:
             self.set_shared_attributes(device_id, shared_attributes)
 
         return device
-
+    
 
     def get_asset_types(self):
         return self.get("/api/asset/types", "Error fetching list of all asset types")
@@ -641,6 +654,61 @@ class TbApi:
         """
         return self.delete(f"/api/device/{device_id}", f"Error deleting device '{device_id}'")
 
+    #--------------------------------------------------------------------------------------------------------------------#
+    #device-profile-controller
+    def get_device_profiles(self, name=None, type=None, pageSize=10000, page=0):
+        """
+        Returns a device profile if name is specified,
+        otherwise returns a list of all device profiles
+        """
+        if name is not None:
+
+            resp = self.get(f"/api/deviceProfiles?pageSize={pageSize}&page={page}&textSearch={name}", "Error retrieving deivece profiles")["data"]
+            assert len(resp) == 1,  "0 or more than 1 device profile found with this name"
+            return resp[0]
+        else:
+            return self.get(f"/api/deviceProfiles?pageSize={pageSize}&page={page}", "Error retrieving deivece profiles")["data"]
+
+    #--------------------------------------------------------------------------------------------------------------------#
+    #entity-relation-controller
+    def add_relation(self, _from, to, type):
+        """
+        create a relation between two entities
+
+        "_from": {
+            "id": "aaaa-bbbb-cccc-dddd",
+            "entityType": "ASSET"
+        }
+
+        "to": {
+            "id": "aaaa-bbbb-cccc-dddd",
+            "entityType": "DEVICE"
+        }
+
+        "type": "Contains"
+        
+        """
+
+        data = {
+            "from": _from,
+            "to": to,
+            "type": type
+        }
+
+        relation = self.post("/api/relation", data, "Error adding relation")
+    
+        return relation
+
+    def get_relations_by_from(self, from_id:dict,  relation_type=''):
+        """
+        Returns list of relation objects for the specified entity by the 'from' direction
+        from must be a dict with keys 'id' and 'entityType'
+        """
+        id = from_id['id']
+        from_type = from_id['entityType']
+
+        return self.get(f"/api/relations?fromId={id}&fromType={from_type}&relationTypeGroup={relation_type}", "Error retrieving relations")
+        
     @staticmethod
     def pretty_print_request(req):
         print("{}\n{}\n{}\n\n{}".format("-----------START-----------", req.method + " " + req.url, "\n".join("{}: {}".format(k, v) for k, v in req.headers.items()), req.body, ))

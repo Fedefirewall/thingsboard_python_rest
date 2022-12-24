@@ -1,4 +1,5 @@
 Not ready for prime time!  (Incomplete and undocumented, and most of things dont works, prbably because they changed the API)
+I fixed some of the functions and now they work, i will slowly try to fix them all.
 
 This code is utterly untested, but will get you pointed in the right direction.
 

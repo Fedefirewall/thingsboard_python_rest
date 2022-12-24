@@ -1,4 +1,4 @@
-Not ready for prime time!  (Incomplete and undocumented, but what's here is useful and works.)
+Not ready for prime time!  (Incomplete and undocumented, and most of things dont works, prbably because they changed the API)
 
 This code is utterly untested, but will get you pointed in the right direction.
 
